@@ -134,4 +134,4 @@ class ServerDB:
 
 if __name__ == "__main__":
     ServerDB()
-    # 심재정입니다. 커밋 확인용 주석입니다.
+    #커밋 확인용 주석입니다.
