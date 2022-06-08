@@ -130,7 +130,8 @@ class ServerDB:
     #
     # def send_gui(self, final_received_message):
     #     self.gui_sock.send(final_received_message.encode())
-
+    
 
 if __name__ == "__main__":
     ServerDB()
+    # 심재정입니다. 커밋 확인용 주석입니다.
