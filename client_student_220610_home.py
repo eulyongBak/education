@@ -29,19 +29,22 @@ class UiInputInformation(QMainWindow, form_class):
         self.word_list = []
         # self.word_list_index = 0
         self.number = 0
+        # self.word_list_len = len(self.word_list)
 
         # 로그인 버튼
         self.btn_student_login.clicked.connect(self.login_progress)
         # self.btn_student_login.clicked.connect(self.move_next_page)
-        # 영단어 학습 진입 버튼
-        self.btn_select_learning.clicked.connect(self.request_msg_english_word)
-        # 영단어 학습 다음 버튼
+        # 메인메뉴 => 영단어 학습 이동 버튼
+        self.btn_select_learning.clicked.connect(self.request_msg_learning_english_word)
+        # 영단어 학습 - 다음 영어 단어 버튼
         self.btn_learning_next.clicked.connect(self.learning_english_word_next)
-        # 영단어 학습 이전 버튼
-        self.btn_goto_quiz.clicked.connect(self.move_next_page2)
-        self.btn_learning_main.clicked.connect(self.move_before_page)
-        # 퀴즈 버튼
-        self.btn_select_quiz.clicked.connect(self.move_next_page2)
+        # 영단어 학습 => 퀴즈 메뉴 이동 버튼
+        self.btn_goto_quiz.clicked.connect(self.move_learning_quiz_page)
+        # 영단어 학습 => 메인 화면 이동 버튼
+        self.btn_learning_main.clicked.connect(self.move_main_page)
+        # 메인메뉴 => 퀴즈 이동 버튼
+        self.btn_select_quiz.clicked.connect(self.move_quiz_page)
+        #
         self.btn_select_consulting.clicked.connect(self.move_next_page3)
         self.btn_learning_main.clicked.connect(self.move_before_page2)
 
@@ -85,9 +88,15 @@ class UiInputInformation(QMainWindow, form_class):
         print("PW : ", self.student_pw)
         self.student_client_socket.send(self.student_id_pw.encode())
 
-    # 서버에 영단어 DB 데이터 요청
-    def request_msg_english_word(self):
+    # 서버에 영단어 학습 DB 데이터 요청
+    def request_msg_learning_english_word(self):
         send_learn_eng_msg = "@learn_eng@"
+        # send_learn_eng_msg = "@learn_eng@"
+        self.student_client_socket.send(send_learn_eng_msg.encode())
+
+    # 서버에 영단어 퀴즈 DB 데이터 요청
+    def request_msg_quiz_english_word(self):
+        send_learn_eng_msg = "@quiz_eng@"
         # send_learn_eng_msg = "@learn_eng@"
         self.student_client_socket.send(send_learn_eng_msg.encode())
 
@@ -106,18 +115,32 @@ class UiInputInformation(QMainWindow, form_class):
             elif "@login_fail@" in msg_data:
                 QMessageBox.question(self, "Error", "로그인 정보가 올바르지 않습니다.", QMessageBox.Ok)
             # elif "@word@" in msg_data:
-            elif "/w/" in msg_data:
+            elif "/lw/" in msg_data:
                 # self.word += msg_data.split("@word@")
                 # self.word.append(msg_data[6:])
-                self.temp_one_word = msg_data.split("/w/")
-                print("수신 받은 영단어 쪼개기 : ", self.temp_one_word)
+                self.temp_one_word = msg_data.split("/lw/")
+                print("수신 받은 영단어 쪼개기(영단어 학습) : ", self.temp_one_word)
                 self.word_list.append(self.temp_one_word)
                 # self.word_list.append(self.one_word_dic)
-                print("학습할 단어 리스트(%d) : " % len(self.word_list), self.word_list)
+                # print("영단어 학습 리스트(%d) : " % self.word_list_len, self.word_list)
+                print("영단어 학습 리스트(%d) : " % len(self.word_list), self.word_list)
                 # self.word_list_index = self.word_list.index(0)
                 self.stacked_widget.setCurrentIndex(2)
                 self.learning_english_word()
+            elif "/qw/" in msg_data:
+                # self.word += msg_data.split("@word@")
+                # self.word.append(msg_data[6:])
+                self.temp_one_word = msg_data.split("/qw/")
+                print("수신 받은 영단어 쪼개기(영단어 퀴즈) : ", self.temp_one_word)
+                self.word_list.append(self.temp_one_word)
+                # self.word_list.append(self.one_word_dic)
+                print("영단어 퀴즈 리스트(%d) : " % len(self.word_list), self.word_list)
+                # print("영단어 퀴즈 리스트(%d) : " % self.word_list_len, self.word_list)
+                # self.word_list_index = self.word_list.index(0)
+                self.stacked_widget.setCurrentIndex(3)
+                self.move_quiz_page()
 
+    # 영단어 학습 - 영어 단어 라벨에 처음 출력(영단어 리스트 0번 요소 단어/뜻)
     # def learning_english_word(self, num):
     def learning_english_word(self):
         # self.lbl_learning_word.setText(self.word_list[self.word_list_index][1])
@@ -129,6 +152,8 @@ class UiInputInformation(QMainWindow, form_class):
         self.lbl_learning_meaning.setText(self.word_list[self.number][2])
         # self.lbl_learning_meaning.setText(self.word_list[0][2])
 
+    # 영단어 학습 - 다음 단어 버튼 리스트 내 영단어 뺑뺑이 돌리기
+    # 영단어 리스트 0번 요소(단어/뜻) =>...=> 마지막 요소 => 0번요소 반복
     # def learning_english_word_next(self, num):
     def learning_english_word_next(self):
         self.number += 1
@@ -144,17 +169,54 @@ class UiInputInformation(QMainWindow, form_class):
         self.lbl_learning_meaning.setText(self.word_list[self.number][2])
         # self.lbl_learning_meaning.setText(self.word_list[1][2])
 
-    def move_before_page(self):
+    # 영단어 학습 => 퀴즈 메뉴 이동 버튼
+    def move_learning_quiz_page(self):
+        self.stacked_widget.setCurrentIndex(3)
+        # for i in range(self.word_list_len):
+        for i in range(len(self.word_list)):
+            self.word_list.pop()
+        print("영어단어 리스트 초기화 : ", self.word_list)
+        # 서버에 영단어 학습 메시지 송신
+        self.request_msg_quiz_english_word()
+        print("request_msg_quiz_english_word 실행 확인")
+        # self.lbl_quiz_word.setText(self.word_list[self.number][1])
+        # if self.te_quiz_meaning.toPlainText() in self.word_list[self.number][2]:
+        #     print("정답!!!")
+        #     self.lbl_answer.setText("정답!!!" + self.word_list[self.number][2])
+        # else:
+        #     print("오답!!!")
+        #     self.lbl_answer.setText("오답!!!" + self.word_list[self.number][2])
+        # self.lbl_learning_meaning.setText(self.word_list[self.number][2])
+
+    # 메인 메뉴 => 퀴즈 메뉴로 이동 / 영단어 학습 => 퀴즈 메뉴로 이동 버튼 수행
+    def move_quiz_page(self):
+        self.stacked_widget.setCurrentIndex(3)
+        # for i in range(self.word_list_len):
+        # 서버에 영단어 학습 메시지 송신
+        self.request_msg_quiz_english_word()
+        self.number = 0
+
+    def quiz_english_word_next(self):
+        self.number += 1
+        if self.number == len(self.word_list):
+            self.number = 0
+        self.lbl_quiz_word.setText(self.word_list[self.number][1])
+        # self.te_quiz_meaning.setText(self.word_list[self.number][2])
+        if self.te_quiz_meaning.toPlainText() in self.word_list[self.number][2]:
+            print("정답!!!")
+            self.lbl_answer.setText(self.word_list[self.number][2])
+        else:
+            print("오답!!!")
+
+    # 영단어 학습 - 메인 메뉴로 이동 버튼
+    def move_main_page(self):
         self.stacked_widget.setCurrentIndex(1)
+        # for i in range(self.word_list_len):
         for i in range(len(self.word_list)):
             self.word_list.pop()
         print("영어단어 리스트 초기화 : ", self.word_list)
 
-    def move_next_page2(self):
-        self.stacked_widget.setCurrentIndex(3)
-        for i in range(len(self.word_list)):
-            self.word_list.pop()
-        print("영어단어 리스트 초기화 : ", self.word_list)
+
 
     # def learning_english_word_before(self, num):
     # def learning_english_word_before(self):
@@ -185,9 +247,9 @@ class UiInputInformation(QMainWindow, form_class):
         self.stacked_widget.setCurrentIndex(current_page + 3)
 
     # 임시로 버튼 누를 때 이전 페이지 넘어 가기
-    # def move_before_page(self):
-    #     current_page = self.stacked_widget.currentIndex()
-    #     self.stacked_widget.setCurrentIndex(current_page - 1)
+    def move_before_page(self):
+        self.stacked_widget.setCurrentIndex(1)
+
 
     def move_before_page2(self):
         current_page = self.stacked_widget.currentIndex()
