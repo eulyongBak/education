@@ -47,7 +47,7 @@ class ServerDB:
         # self.connection = pymysql.connect(
         #     host='10.10.20.121', port=3306, user='root', password='1234',
         #     db='EDUCATION', charset='utf8')
-        # # 커서 가져오기 (연결할 DB와 상화작용하기 위해서 cursor 객체 생성필요)
+        # # 커서 가져오기 (연결할 DB와 상호작용하기 위해서 cursor 객체 생성필요)
         # self.cursor = self.connection.cursor()
 
     def receive_msg_sock(self):
@@ -122,7 +122,7 @@ class ServerDB:
             # host='10.10.20.121', port=3306, user='root', password='1234',
             host='localhost', port=3306, user='root', password='1234',
             db='EDUCATION', charset='utf8')
-        # 커서 가져오기 (연결할 DB와 상화작용하기 위해서 cursor 객체 생성필요)
+        # 커서 가져오기 (연결할 DB와 상호작용하기 위해서 cursor 객체 생성필요)
         cursor = connection.cursor()
         # SQL 문 만들기
         sql = 'SELECT * FROM MEMBER'
@@ -165,7 +165,7 @@ class ServerDB:
             host='localhost', port=3306, user='root', password='1234',
             # host='10.10.20.121', port=3306, user='root', password='1234',
             db='EDUCATION', charset='utf8')
-        # 커서 가져오기 (연결할 DB와 상화작용하기 위해서 cursor 객체 생성필요)
+        # 커서 가져오기 (연결할 DB와 상호작용하기 위해서 cursor 객체 생성필요)
         cursor = connection.cursor()
         # SQL 문 만들기
         sql = 'SELECT * FROM ENGLISH'
