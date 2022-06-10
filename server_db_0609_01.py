@@ -3,12 +3,16 @@ from socket import *
 from threading import *
 import pymysql
 import random
+import time
 
 class ServerDB:
     def __init__(self):
         # 변수 초깃값 설정
         self.msg_sock = None
         self.std_addr = None
+        # self.connection = None
+        # self.cursor = None
+        self.receive_msg = ""
         self.receive_student_id_pw = ""
         self.receive_id_pw = ""
         self.receive_student_id = ""
@@ -17,11 +21,10 @@ class ServerDB:
         self.receive_teacher_id = ""
         self.receive_teacher_pw = ""
         self.sql_result_row = ""
+        self.login_accept_msg = ""
         self.sql_result = []
         self.sql_result_list = []
-        self.login_accept_msg = ""
-        self.connection = None
-        self.cursor = None
+
         # self.s_sock = socket(AF_INET, SOCK_STREAM)
 
 
@@ -59,8 +62,8 @@ class ServerDB:
             # th_std_id_pw.start()
             # th_learn_eng_word = Thread(target=self.send_english_word, args=(self.msg_sock,))
             # th_learn_eng_word.start()
-            th = Thread(target=self.receive_msg_process, args=(self.msg_sock,))
-            th.start()
+            th_recv_msg_proc = Thread(target=self.receive_msg_process, args=(self.msg_sock,))
+            th_recv_msg_proc.start()
 
     # def accept_student_eng_sock(self):
     #     student_eng_sock = socket()
@@ -70,17 +73,20 @@ class ServerDB:
     #     th_eng_word = Thread(target=self.send_english_word, args=(self.eng_word_sock,))
     #     th_eng_word.start()
 
-
     def receive_msg_process(self, c_socket):
-        self.receive_msg = c_socket.recv(1024).decode()
-        print("클라이언트 수신 MSG :", self.receive_msg)
-        if "@sid@" in self.receive_msg:
-            self.receive_id_pw_process()
-        elif "@tid@" in self.receive_id_pw:
-            self.receive_id_pw_process()
-        elif "@learn_eng@" in self.receive_id_pw:
-            print("@learn_eng@ 메시지 받음")
-            self.send_english_word()
+        while True:
+            self.receive_msg = c_socket.recv(1024).decode()
+            print("클라이언트 수신 MSG :", self.receive_msg)
+            if "@sid@" in self.receive_msg:
+                self.receive_id_pw_process()
+                # break
+            elif "@tid@" in self.receive_id_pw:
+                self.receive_id_pw_process()
+                # break
+            elif "@learn_eng@" in self.receive_msg:
+                print("@learn_eng@ 메시지 받음")
+                self.send_english_word()
+                # break
 
 
     # def receive_id_pw_process(self, c_socket):
@@ -142,7 +148,9 @@ class ServerDB:
         connection.close()
         # self.send_english_word()
 
-    def send_english_word(self, c_socket):
+    def send_english_word(self):
+        print("send_english_word 실행 확인")
+
         # self.receive_eng_word = c_socket.recv(1024).decode()
         # print("클라이언트 수신 MSG2 :", self.receive_id_pw)
         # self.receive_id_pw가 학생 클라이언트 로그인 정보일 경우
@@ -175,6 +183,7 @@ class ServerDB:
             print("랜덤으로 뽑은 영단어 : ", random_eng_word)
             send_eng_word = "@word@"+str(random_eng_word[0]) + "/" + random_eng_word[1] + "/" + random_eng_word[2]
             print("학생 클라이언트로 보낼 영단어 : ", send_eng_word)
+            time.sleep(0.5)
             self.msg_sock.send(send_eng_word.encode())
             # self.eng_word_sock.send(send_eng_word.encode())
         connection.close()
