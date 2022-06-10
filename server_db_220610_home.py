@@ -47,7 +47,7 @@ class ServerDB:
         # self.connection = pymysql.connect(
         #     host='10.10.20.121', port=3306, user='root', password='1234',
         #     db='EDUCATION', charset='utf8')
-        # # 커서 가져오기 (연결할 DB와 상호작용하기 위해서 cursor 객체 생성필요)
+        # # 커서 가져오기 (연결할 DB와 상화작용하기 위해서 cursor 객체 생성필요)
         # self.cursor = self.connection.cursor()
 
     def receive_msg_sock(self):
@@ -85,8 +85,12 @@ class ServerDB:
                 # break
             elif "@learn_eng@" in self.receive_msg:
                 print("@learn_eng@ 메시지 받음")
-                self.send_english_word()
-                # break
+                self.send_english_word("@learn_eng@")
+                break
+            elif "@quiz_eng@" in self.receive_msg:
+                print("@quiz_eng@ 메시지 받음")
+                self.send_english_word("@quiz_eng@")
+                break
 
     # def receive_id_pw_process(self, c_socket):
     def receive_id_pw_process(self):
@@ -122,7 +126,7 @@ class ServerDB:
             # host='10.10.20.121', port=3306, user='root', password='1234',
             host='localhost', port=3306, user='root', password='1234',
             db='EDUCATION', charset='utf8')
-        # 커서 가져오기 (연결할 DB와 상호작용하기 위해서 cursor 객체 생성필요)
+        # 커서 가져오기 (연결할 DB와 상화작용하기 위해서 cursor 객체 생성필요)
         cursor = connection.cursor()
         # SQL 문 만들기
         sql = 'SELECT * FROM MEMBER'
@@ -148,7 +152,7 @@ class ServerDB:
         connection.close()
         # self.send_english_word()
 
-    def send_english_word(self):
+    def send_english_word(self, recv_msg):
         # print("send_english_word 실행 확인")
         # self.receive_eng_word = c_socket.recv(1024).decode()
         # print("클라이언트 수신 MSG2 :", self.receive_id_pw)
@@ -165,10 +169,11 @@ class ServerDB:
             host='localhost', port=3306, user='root', password='1234',
             # host='10.10.20.121', port=3306, user='root', password='1234',
             db='EDUCATION', charset='utf8')
-        # 커서 가져오기 (연결할 DB와 상호작용하기 위해서 cursor 객체 생성필요)
+        # 커서 가져오기 (연결할 DB와 상화작용하기 위해서 cursor 객체 생성필요)
         cursor = connection.cursor()
         # SQL 문 만들기
         sql = 'SELECT * FROM ENGLISH'
+        # ((번호, 단어, 뜻),(),())
         cursor.execute(sql)  # sql문 실행
         # self.cursor.execute(sql)  # sql문 실행
         # self.cursor.execute(sql)  # sql문 실행
@@ -181,9 +186,15 @@ class ServerDB:
         for i in range(3):
             random_eng_word = random.choice(sql_result)
             print("랜덤으로 뽑은 영단어 : ", random_eng_word)
-            send_eng_word = str(random_eng_word[0]) + "/w/" + random_eng_word[1] + "/w/" + random_eng_word[2]
-            # send_eng_word = "@word@"+str(random_eng_word[0]) + "/" + random_eng_word[1] + "/" + random_eng_word[2]
-            print("학생 클라이언트로 보낼 영단어 : ", send_eng_word)
+            if "@learn_eng@" in recv_msg:
+                # if "@learn_eng@" in self.receive_msg :
+                send_eng_word = str(random_eng_word[0]) + "/lw/" + random_eng_word[1] + "/lw/" + random_eng_word[2]
+                # send_eng_word = str(random_eng_word[0]) + "/w/" + random_eng_word[1] + "/w/" + random_eng_word[2]
+                print("학생 클라이언트로 보낼 영단어(학습) : ", send_eng_word)
+            elif "@quiz_eng@" in recv_msg:
+                # elif "@quiz_eng@" in self.receive_msg:
+                send_eng_word = str(random_eng_word[0]) + "/qw/" + random_eng_word[1] + "/qw/" + random_eng_word[2]
+                print("학생 클라이언트로 보낼 영단어(퀴즈) : ", send_eng_word)
             time.sleep(0.5)
             self.msg_sock.send(send_eng_word.encode())
             # self.eng_word_sock.send(send_eng_word.encode())
